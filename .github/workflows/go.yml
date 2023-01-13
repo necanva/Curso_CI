@@ -12,14 +12,17 @@ on: # define em que ocasiões ocorrerá a "ativação do GitHub Actions
 jobs:
 
   test:
-    runs-on: ubuntu-latest # define em qual tipo de máquina ocorrerá a execução do job
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go_version: ['1.19','1.17','>=1.18']
     steps:
     - uses: actions/checkout@v3 # permite a utilização do GitHub Actions dentro da máquina
 
     - name: Set up Go # preparação do Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.19
+        go-version: ${{matrix.go_version}}
         
     - name: Build-DB
       run: docker-compose build # build primeiro pra caso seja necessario fazer um build
