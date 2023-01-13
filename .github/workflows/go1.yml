@@ -1,0 +1,48 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on: # define em que ocasiões ocorrerá a "ativação do GitHub Actions
+  push: # no push
+    branches: [ "Aula_1" ]
+  pull_request: # e também no pull request
+    branches: [ "Aula_1" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go_version: ['1.19','1.17','>=1.18']
+    steps:
+    - uses: actions/checkout@v3 # permite a utilização do GitHub Actions dentro da máquina
+
+    - name: Set up Go # preparação do Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{matrix.go_version}}
+        
+    - name: Build-DB
+      run: docker-compose build # build primeiro pra caso seja necessario fazer um build
+      # de uma imagem dentro do docker-compose
+      
+    - name: Create-DB
+      run: docker-compose up -d # -d é uma flag do docker para não travar o terminal    
+    
+    - name: Test
+      run: go test -v main_test.go
+      # fazer o teste anteriormente ao Build é interessantes
+      # para não perder tempo fazendo o build de algo que posteriormente
+      # pode falhar nos testes
+
+  build:
+    needs: test # define que para que o job "build" ocorra é necessário que a tarefa test tenha ocorrido anteriormente
+    runs-on: ubuntu-latest # define em qual tipo de máquina ocorrerá a execução do job
+    steps:
+    - uses: actions/checkout@v3 # permite a utilização do GitHub Actions dentro da máquina
+
+    - uses: actions/setup-go@v3
+    - name: Build
+      run: go build -v main.go    
